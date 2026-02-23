@@ -36,3 +36,32 @@ async function askQuestion() {
 }
 }
 }
+function saveEmail() {
+  const email = document.getElementById("emailInput").value;
+  
+  if (email === "") {
+    document.getElementById("emailMessage").innerText = "Please enter email.";
+    return;
+  }
+
+  document.getElementById("emailMessage").innerText =
+    "You're on the early access list! 🚀";
+}
+async function saveEmail() {
+  const email = document.getElementById("emailInput").value;
+
+  if (email === "") {
+    document.getElementById("emailMessage").innerText = "Please enter email.";
+    return;
+  }
+
+  await fetch("PASTE_YOUR_WEB_APP_URL_HERE", {
+    method: "POST",
+    body: JSON.stringify({ email: email }),
+  });
+
+  document.getElementById("emailMessage").innerText =
+    "You're on the early access list! 🚀";
+
+  document.getElementById("emailInput").value = "";
+}
