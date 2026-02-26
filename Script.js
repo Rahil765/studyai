@@ -1,67 +1,165 @@
-function askQuestion() {
-  const question = document.getElementById("question").value;
+let timer;
+let timeLeft = 1500; // 25 minutes
 
-  document.getElementById("answer").innerText =
-    "AI explanation for: " + question +
-    "\n\n(Backend connection coming next step)";
-}async function askQuestion() {
-  const question = document.getElementById("question").value;
-  const answerDiv = document.getElementById("answer");
+function addTask() {
+  const input = document.getElementById("taskInput");
+  const taskText = input.value;
 
-  answerDiv.innerText = "Loading... ⏳";
+  if (taskText === "") return;
 
-  setTimeout(() => {
-    answerDiv.innerText =
-      "AI explanation for: " + question +
-      "\n\n(Backend connection coming soon)";
-  }, 1000);
-  function clearText() {
-  document.getElementById("question").value = "";
-  document.getElementById("answer").innerText = "";
-  let history = [];
+  const li = document.createElement("li");
+  li.innerHTML = `${taskText} <button onclick="this.parentElement.remove()">❌</button>`;
 
-async function askQuestion() {
-  const question = document.getElementById("question").value;
-  const answerDiv = document.getElementById("answer");
+  document.getElementById("taskList").appendChild(li);
+  input.value = "";
+}
 
-  history.push(question);
+function startTimer() {
+  if (timer) return;
 
-  answerDiv.innerText = "Loading... ⏳";
+  timer = setInterval(() => {
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      timer = null;
+      alert("Time's up!");
+      return;
+    }
 
-  setTimeout(() => {
-    answerDiv.innerText =
-      "AI explanation for: " + question +
-      "\n\nQuestions Asked: " + history.length;
+    timeLeft--;
+    updateTime();
   }, 1000);
 }
+
+function resetTimer() {
+  clearInterval(timer);
+  timer = null;
+  timeLeft = 1500;
+  updateTime();
 }
+
+function updateTime() {
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  document.getElementById("time").textContent =
+    `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
-function saveEmail() {
-  const email = document.getElementById("emailInput").value;
-  
-  if (email === "") {
-    document.getElementById("emailMessage").innerText = "Please enter email.";
-    return;
+
+function toggleDarkMode() {
+  document.body.classList.toggle("dark-mode");
+}
+
+updateTime();let timer;
+let timeLeft = 1500;
+
+const taskList = document.getElementById("taskList");
+const taskInput = document.getElementById("taskInput");
+
+// Load tasks when page opens
+window.onload = function () {
+  loadTasks();
+  updateTime();
+};
+
+function addTask() {
+  const taskText = taskInput.value.trim();
+  if (taskText === "") return;
+
+  const task = {
+    text: taskText,
+    completed: false
+  };
+
+  saveTask(task);
+  renderTask(task);
+  taskInput.value = "";
+}
+
+function renderTask(task) {
+  const li = document.createElement("li");
+
+  li.innerHTML = `
+    <span onclick="toggleComplete(this)" style="cursor:pointer; ${task.completed ? 'text-decoration: line-through;' : ''}">
+      ${task.text}
+    </span>
+    <button onclick="deleteTask(this)">❌</button>
+  `;
+
+  taskList.appendChild(li);
+}
+
+function saveTask(task) {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.push(task);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function loadTasks() {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.forEach(task => renderTask(task));
+}
+
+function deleteTask(button) {
+  const li = button.parentElement;
+  const text = li.querySelector("span").textContent;
+
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter(task => task.text !== text);
+
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  li.remove();
+}
+
+function toggleComplete(span) {
+  span.style.textDecoration =
+    span.style.textDecoration === "line-through" ? "none" : "line-through";
+}
+
+// Pomodoro Timer
+function startTimer() {
+  if (timer) return;
+
+  timer = setInterval(() => {
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      timer = null;
+      alert("Time's up!");
+      return;
+    }
+
+    timeLeft--;
+    updateTime();
+  }, 1000);
+}
+
+function resetTimer() {
+  clearInterval(timer);
+  timer = null;
+  timeLeft = 1500;
+  updateTime();
+}
+
+function updateTime() {
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  document.getElementById("time").textContent =
+    `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle("dark-mode");
+}function updateStats() {
+  let completed = document.querySelectorAll("span[style*='line-through']").length;
+  document.getElementById("completedToday").textContent = completed;
+
+  let streak = localStorage.getItem("streak") || 0;
+  if (completed > 0) {
+    streak = parseInt(streak) + 1;
+    localStorage.setItem("streak", streak);
   }
 
-  document.getElementById("emailMessage").innerText =
-    "You're on the early access list! 🚀";
+  document.getElementById("streak").textContent = localStorage.getItem("streak") || 0;
 }
-async function saveEmail() {
-  const email = document.getElementById("emailInput").value;
 
-  if (email === "") {
-    document.getElementById("emailMessage").innerText = "Please enter email.";
-    return;
-  }
-
-  await fetch("PASTE_YOUR_WEB_APP_URL_HERE", {
-    method: "POST",
-    body: JSON.stringify({ email: email }),
-  });
-
-  document.getElementById("emailMessage").innerText =
-    "You're on the early access list! 🚀";
-
-  document.getElementById("emailInput").value = "";
-}
+document.addEventListener("click", () => {
+  setTimeout(updateStats, 100);
+});
